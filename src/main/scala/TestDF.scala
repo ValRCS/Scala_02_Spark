@@ -71,6 +71,7 @@ object TestDF extends App {
   println(myRow.schema)
   println(myRow)
 
+  val firstRow = df4.first()
   val destCountry = df4.first()(0).asInstanceOf[String]
   println(destCountry)
   val originCountry = df4.first()(1).asInstanceOf[String]
@@ -78,5 +79,9 @@ object TestDF extends App {
   val numberOfFlights = df4.first()(2).asInstanceOf[Int]
   println(s"Flights Flown from $originCountry to $destCountry: $numberOfFlights")
 
+  //https://stackoverflow.com/questions/30264373/is-there-better-way-to-display-entire-spark-sql-dataframe
+  df4.toJSON.collect.foreach(println)
+  df4.collect.foreach(println)
+  //generally you do not want to print everything well because you might have a huuuge dataframe
 
 }
