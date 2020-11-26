@@ -1,5 +1,6 @@
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.{desc, asc}
 
 object ReadingCSV extends App {
 
@@ -19,11 +20,13 @@ object ReadingCSV extends App {
     .withColumn("Quantity", col("Quantity").cast("int"))
     .withColumn("UnitPrice", col("UnitPrice").cast("double"))
     .withColumn("CustomerID", col("CustomerID").cast("int"))
-    .withColumn("InvoiceDate", col(
-      "InvoiceDate").cast("date"))
+//    .withColumn("InvoiceDate", col("InvoiceDate").cast("date"))
+    .withColumn("InvoiceDate", col("InvoiceDate").cast("timestamp"))
   df2.printSchema()
   println(df2.summary().show())
   val negQuantity = df2.filter(col("Quantity") < 0)
   println(negQuantity.show(10))
+  //Filter for prices over 10
+  print(df2.where("UnitPrice > 10").sort(desc("UnitPrice")).show(10))
 
 }
