@@ -1,6 +1,8 @@
+import java.io.File
+
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.functions.{desc, asc}
+import org.apache.spark.sql.functions.{asc, desc}
 
 object ReadingCSV extends App {
 
@@ -68,4 +70,33 @@ object ReadingCSV extends App {
 
   println(duplicates.count)
   println(df2.count - df2.distinct.count)
+
+  val fPath2011 = "./src/resources/2011-12-09.csv"
+  val df2011 = session.read
+    .format("csv")
+    .option("header", true) //will use first row for header
+    .load(fPath2011)
+  df2011.summary().show()
+  df2011.printSchema()
+  val dfUnion = df.union(df2011) //only works when schema matches
+  println(dfUnion.count)
+  val fPathUnion = "./src/resources/union2010-2011.csv"
+  //careful with saving on a single machine as the CSV could potentially be huge...
+//  dfUnion.write.format("csv").mode("overwrite").save(fPathUnion)
+  val tmpPath = "./src/resources/tempCSV"
+  dfUnion
+    .coalesce(1)
+    .write.option("header","true")
+    .format("csv")
+    .mode("overwrite")
+    .save(tmpPath)
+  val dir = new File(tmpPath)
+  dir.listFiles.foreach(println)
+  //FIXME file renaming
+//  val newFileRgex = tmpPath + File.separatorChar + ".part-00000.*.csv"
+//  val tmpTsfFile = dir.listFiles.filter(_.toPath.toString.matches(newFileRgex))(0).toString
+//  (new File(tmpTsfFile)).renameTo(new File(fPathUnion))
+//
+//  dir.listFiles.foreach( f => f.delete ) //delete all the files in the directory
+//  dir.delete //delete itself
 }
