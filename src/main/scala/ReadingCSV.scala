@@ -44,6 +44,7 @@ object ReadingCSV extends App {
   val fraction = 0.5 //so 20%
   val dSample = df2.sample(withReplacement, fraction, seed)
   println("Dataframe size", df2.count(), df2.distinct().count())
+  //TODO find the duplicate rows in our dataframe DF2
 
   println(dSample.count())
   println(dSample.distinct().count())
@@ -61,5 +62,10 @@ object ReadingCSV extends App {
   val propFrames= df2.randomSplit(Array(5, 4, 3), seed)
   propFrames.foreach(df => println(df.count())) // False
 
+  val uniques = df2.distinct() //dropDuplicates is an alias
+  val duplicates = df2.exceptAll(uniques) //.except would have dropped the duplicates
+  duplicates.sort("StockCode").show(50)
 
+  println(duplicates.count)
+  println(df2.count - df2.distinct.count)
 }
