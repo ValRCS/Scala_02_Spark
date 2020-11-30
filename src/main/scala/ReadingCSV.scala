@@ -23,10 +23,18 @@ object ReadingCSV extends App {
 //    .withColumn("InvoiceDate", col("InvoiceDate").cast("date"))
     .withColumn("InvoiceDate", col("InvoiceDate").cast("timestamp"))
   df2.printSchema()
-  println(df2.summary().show())
+  df2.summary().show()
   val negQuantity = df2.filter(col("Quantity") < 0)
-  println(negQuantity.show(10))
+  negQuantity.show(10)
   //Filter for prices over 10
-  print(df2.where("UnitPrice > 10").sort(desc("UnitPrice")).show(10))
+  df2.where("UnitPrice > 10").sort(desc("UnitPrice")).show(10)
+  df2
+    .where("UnitPrice > 5")
+    .where("Country != 'United Kingdom'")
+    .sort(desc("UnitPrice"))
+    .show(10)
+  df2.select("Country").distinct().show()
+  println(df2.select("Country").distinct().count()) //should be 7
+  //TODO select single entries for each country meaning full rows
 
 }
