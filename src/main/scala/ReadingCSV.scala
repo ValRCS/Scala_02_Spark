@@ -92,11 +92,11 @@ object ReadingCSV extends App {
     .save(tmpPath)
   val dir = new File(tmpPath)
   dir.listFiles.foreach(println)
-  //FIXME file renaming
-//  val newFileRgex = tmpPath + File.separatorChar + ".part-00000.*.csv"
-//  val tmpTsfFile = dir.listFiles.filter(_.toPath.toString.matches(newFileRgex))(0).toString
-//  (new File(tmpTsfFile)).renameTo(new File(fPathUnion))
+
+//  val newFileRgex = tmpPath + File.separatorChar + ".part-00000.*.csv" //TODO fix regex when needed
+  val tmpTsfFile = dir.listFiles.filter(_.toPath.toString.endsWith(".csv"))(0).toString
+  (new File(tmpTsfFile)).renameTo(new File(fPathUnion))
 //
-//  dir.listFiles.foreach( f => f.delete ) //delete all the files in the directory
-//  dir.delete //delete itself
+  dir.listFiles.foreach( f => f.delete ) //delete all the files in the directory
+  dir.delete //delete itself
 }
