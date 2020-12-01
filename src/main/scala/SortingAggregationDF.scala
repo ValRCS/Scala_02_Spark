@@ -1,5 +1,5 @@
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{col, desc, expr}
+import org.apache.spark.sql.functions.{col, current_date, current_timestamp, desc, expr, regexp_extract, to_timestamp}
 
 object SortingAggregationDF extends App {
   val session = SparkSession.builder().appName("test").master("local").getOrCreate()
@@ -50,7 +50,7 @@ object SortingAggregationDF extends App {
   df2.where(col("Description").contains("POSTAGE")).show(10)
   //TODO check syntax on this line
 //  df2.where(expr("Description LIKE `post`")).show(5)
-  //TODO get rows with postage using regular expression and replace mail
+
   import org.apache.spark.sql.functions.regexp_replace
   //recipe on how to check regex to check for multiple values
   val simpleColors = Seq("black", "white", "red", "green", "blue")
@@ -58,7 +58,53 @@ object SortingAggregationDF extends App {
   // the | signifies `OR` in regular expression syntax
   df2.select(
     regexp_replace(col("Description"), regexString, "COLOR").alias("color_clean"),
-    col("Description")).show(12, truncate = false)
+    col("Description"))
+    .where(col("color_clean")
+    .contains("COLOR")).show(12, truncate = false)
+
+  //get rows with postage using regular expression and replace with mail
+  df2.select(
+    regexp_replace(col("Description"), "POSTAGE", "mail").alias("desc_clean"),
+    col("Description"))
+    .where(col("desc_clean")
+      .contains("mail")).show(12, truncate = false)
+
+
+  df2.withColumn("desc_clean", regexp_replace(col("Description"), "POSTAGE", "mail"))
+    .where(col("desc_clean")
+      .contains("mail")).show(12, truncate = false)
+
+
+  df2.withColumn("desc_clean", regexp_extract(col("Description"), "POS..GE", 0))
+    .where(col("desc_clean")
+      .contains("POSTAGE")) //TODO how to do wildcard or regex matches
+    .show(12, truncate = false)
+
+  df2.where(col("Description").like("%POSTAGE%"))
+    .show(12, truncate = false)
+
+  //so with this in the literal we can put any regex to match and filter by that
+  df2.where(col("Description").rlike("POS..GE"))
+    .show(12, truncate = false)
+
+  //this gets us all the rows which hae specific color names
+  df2.where(col("Description").rlike(regexString))
+    .show(12, truncate = false)
+ //just remember that regex searching is computationally intensive than regular exact matching
+
+  df2.limit(20).
+    withColumn("today", current_date())
+    .withColumn("now", current_timestamp())
+    .show(truncate = false)
+
+//so lets find purchases between 2010-12-01 8:20 and 8:40
+//  df2.where(expr("Invoice Date > 2010-12-01 08:20:00"))
+////    .where(col("Invoice Date") < "2010-12-01 08:40:00")
+//    .show(truncate = false)
+//we can use normal SQL for time selection
+  df2.where(expr("InvoiceDate BETWEEN '2010-12-01 08:28:00' AND '2010-12-01 08:40:00'"))
+    .show(false)
+
 
 
 }
