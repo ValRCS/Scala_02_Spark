@@ -43,10 +43,12 @@ object NullOrderings extends App {
   val df3 = df.na.fill(9000, Seq("CustomerId"))
   println(df3.where(expr("CustomerId = 9000")).count)
 
-//  val df4 = df.na.replace("Description", Map("" -> "UNKNOWN")) // it is not picking up empty strings there re none
+//  val df4 = df.na.replace("Description", Map("null"-> "UNKNOWN")) // it is not picking up empty strings there re none
 ////  df4.where(col("Description").contains("UNKNOWN")).show
 //  df4.where(col("Description") === "UNKNOWN").show
 
-  val df4 = df.na.replace("UnitPrice",Map(0.0 -> 9000.5))
-  df4.where(expr("UnitPrice = 9000.5")).show
+  val df5 = df.na.replace("UnitPrice",Map(0.0 -> 9000.5))
+  df5.where(expr("UnitPrice = 9000.5")).show
+
+
 }
