@@ -16,8 +16,8 @@ object UsingOption extends App {
   val myInts = v.flatten //one way of getting all the non None values out
   myInts.foreach(println)
 
-  //second way of accessinpes is using getOorElse("some default for None")
-  //  v.foreach(el => println(eg our Option tyl.getOrElse("not a number")))
+  //second way of accessing our Option types is using getOorElse("some default for None")
+  v.foreach(el => println(el.getOrElse("not a number")))
 
   //third way of accessing Option values with pattern matching
   a.foreach(el => toInt(el) match {
