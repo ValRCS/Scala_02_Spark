@@ -1,5 +1,5 @@
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{approx_count_distinct, avg, col, count, countDistinct, expr, first, from_json, get_json_object, json_tuple, kurtosis, last, max, min, regexp_extract, regexp_replace, skewness, stddev, stddev_pop, sum, to_json, var_pop, variance}
+import org.apache.spark.sql.functions.{approx_count_distinct, avg, col, corr, count, countDistinct, covar_pop, covar_samp, expr, first, from_json, get_json_object, json_tuple, kurtosis, last, max, min, regexp_extract, regexp_replace, skewness, stddev, stddev_pop, sum, to_json, var_pop, variance}
 import org.apache.spark.sql.types._
 //import org.apache.spark.sql.functions
 
@@ -137,5 +137,15 @@ object UsingJSON extends App {
       ,kurtosis(col("money"))
 
     ).show
+
+  mdf.select(corr("latitude", "money")
+    ,covar_samp("latitude", "money")
+    ,covar_pop("latitude", "money")
+  ).show
+
+  mdf.groupBy("gender").count().show()
+  mdf.groupBy("gender", "likesWinter").count().show()
+
+  //TODO extract top level domain and group by that domain .com, .uk, etc
 
 }
