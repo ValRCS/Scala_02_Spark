@@ -1,5 +1,6 @@
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{array_contains, col, explode, expr, split, struct}
+import org.apache.spark.sql.catalyst.dsl.expressions.StringToAttributeConversionHelper
+import org.apache.spark.sql.{SparkSession, functions}
+import org.apache.spark.sql.functions.{array_contains, col, explode, expr, map_keys, split, struct}
 
 object ComplexTypes extends App {
   val session = SparkSession.builder().appName("test").master("local").getOrCreate()
@@ -68,4 +69,44 @@ object ComplexTypes extends App {
   dfExploded.show(12,false)
   println(dfExploded.count)
   dfExploded.summary().show(truncate = false)
+
+  df.select(functions.map(col("Description"), col("InvoiceNo")).alias("complex_map")).show(5, false)
+
+  val dfMap = df.withColumn("complex_map", functions.map(col("Description"), col("InvoiceNo")))
+
+  dfMap.selectExpr("complex_map['WHITE METAL LANTERN']").show(5, false)
+  println(dfMap.selectExpr("complex_map['WHITE METAL LANTERN']").count)
+  dfMap.selectExpr("complex_map['WHITE METAL LANTERN']")
+    .na.drop("all", Seq("complex_map[WHITE METAL LANTERN]"))
+    .show(5, false)
+
+  dfMap.selectExpr("explode(complex_map)").show(5, false)
+
+  dfMap.show(5, false)
+  //we could have multiple keys so the below will not work
+  //dfMap.withColumn("key", expr("explode(complex_map)")).show(5, false)
+
+  dfMap.withColumn("Lantern", col("complex_map")
+    .getItem("WHITE METAL LANTERN"))
+    .show(5,false)
+
+  val keyMap = dfMap.select(map_keys(col("complex_map")))
+  println(keyMap.count)
+  keyMap.show(5, false)
+  val uniqKeys = keyMap.distinct() //FIXME distinct
+//  uniqKeys.show(5, false)
+//  println(keyMap.distinct.count)
+//  val keysDF = dfMap.select(explode(map_keys(col("complex_map")))).distinct()
+
+//  val keysDF = dfMap
+//    .na.drop
+//    .select(explode(map_keys(col("complex_map")))).distinct()
+//  keysDF.show()
+//  val keys = keysDF.collect().map(f=>f.get(0))
+//  val keyCols = keys.map(f=> col("property").getItem(f).as(f.toString))
+//  dfMap.select(col("name") +: keyCols:_*).show(false)
+
+
+
+
 }
