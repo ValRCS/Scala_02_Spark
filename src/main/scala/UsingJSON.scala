@@ -111,6 +111,9 @@ object UsingJSON extends App {
     def mySplit(version:String):String = version.split('.')(0)
     session.udf.register("mySplit", mySplit(_:String):String)
 
+    def myEmailSplit(email:String):String = email.split('.').last
+    session.udf.register("myEmailSplit", myEmailSplit(_:String):String)
+
     val mdf = jdf
       .withColumn("money", regexp_replace(col("Savings"), "€", ""))
       .withColumn("money", regexp_replace(col("money"), ",", "."))
@@ -121,6 +124,7 @@ object UsingJSON extends App {
       .withColumn("minorVersion", col("minorVersion").cast("int"))
       .withColumn("version_number", expr("mySplit(app_version)")) //we can use our own function instead of regex or with regex inside
       .withColumn("version_number", col("version_number").cast("int"))
+      .withColumn("email_extension", expr("myEmailSplit(email)"))
     mdf.show(5, false)
     mdf.printSchema()
 
@@ -147,5 +151,49 @@ object UsingJSON extends App {
   mdf.groupBy("gender", "likesWinter").count().show()
 
   //TODO extract top level domain and group by that domain .com, .uk, etc
+  mdf.groupBy("email_extension").count.show(false)
+
+  //so counting well it does not matter which of the other columns you take
+  //for other agg methods it will be important what column you use
+  mdf.groupBy("likesWinter").agg(
+    count("money").alias("dinero"),
+    expr("count(money) as nauda")) //same as above line
+    .show()
+
+  mdf.groupBy("likesWinter")
+    .agg("money"->"avg",
+      "money"->"min",
+      "money"->"max",
+      "money"-> "count",
+      "latitude"-> "count" //same as above count
+    )
+    .show()
+
+    val winterDF = mdf.groupBy("likesWinter", "gender")
+    .agg("money"->"avg",
+      "money"->"min",
+      "money"->"max",
+      "money"-> "count",
+      "latitude"-> "count" //same as above count
+    )
+  winterDF.printSchema()
+
+  val tmpPath = "./src/resources/winter"
+  winterDF
+    .coalesce(1)
+    .write.option("header","true")
+    .format("csv")
+    .mode("overwrite")
+    .save(tmpPath) //rememember if you want nice names you have to write a function to clean up the default spark "ugly" names
+
+  winterDF
+    .coalesce(1)
+    .write.option("header","true")
+    .format("json")
+    .mode("overwrite")
+    .save(tmpPath)
+
+  winterDF.write.json("./src/resources/winterJSON") //same as .format("json").save(mypath)
+  //TODO add flag to save multiline JSON, so an array of dictionaries for example
 
 }
