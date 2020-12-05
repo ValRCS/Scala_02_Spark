@@ -90,12 +90,17 @@ object ComplexTypes extends App {
     .getItem("WHITE METAL LANTERN"))
     .show(5,false)
 
-  val keyMap = dfMap.select(map_keys(col("complex_map")))
+  val keyMap = dfMap.select(map_keys(col("complex_map"))).withColumnRenamed("map_keys(complex_map)", "key_arr")
   println(keyMap.count)
   keyMap.show(5, false)
-  val uniqKeys = keyMap.distinct() //FIXME distinct
-//  uniqKeys.show(5, false)
-//  println(keyMap.distinct.count)
+  keyMap.printSchema()
+  val flatKeys = keyMap.selectExpr("key_arr[0]")
+    .withColumnRenamed("key_arr[0]", "myKeys")
+  flatKeys.show(5, false)
+  flatKeys.printSchema()
+  val nullKeys = flatKeys.selectExpr("myKeys = null")//FIXME distinct
+  nullKeys.show(5, false)
+  println(nullKeys.count)
 //  val keysDF = dfMap.select(explode(map_keys(col("complex_map")))).distinct()
 
 //  val keysDF = dfMap
