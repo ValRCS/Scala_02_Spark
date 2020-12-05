@@ -1,5 +1,5 @@
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{approx_count_distinct, col, count, countDistinct, expr, first, from_json, get_json_object, json_tuple, last, max, min, regexp_replace, to_json}
+import org.apache.spark.sql.functions.{approx_count_distinct, col, count, countDistinct, expr, first, from_json, get_json_object, json_tuple, last, max, min, regexp_extract, regexp_replace, to_json}
 import org.apache.spark.sql.types._
 
 object UsingJSON extends App {
@@ -107,10 +107,19 @@ object UsingJSON extends App {
     jdf.withColumn("money", regexp_replace(col("Savings"), "€", ""))
     .show(5, false)
 
+    def mySplit(version:String):String = version.split('.')(0)
+    session.udf.register("mySplit", mySplit(_:String):String)
+
     val mdf = jdf
       .withColumn("money", regexp_replace(col("Savings"), "€", ""))
       .withColumn("money", regexp_replace(col("money"), ",", "."))
       .withColumn("money", col("money").cast("double"))
+      .withColumn("majorVersion", regexp_extract(col("app_version"), "(\\d+)", 0))
+      .withColumn("majorVersion", col("majorVersion").cast("int"))
+      .withColumn("minorVersion", regexp_extract(col("app_version"), "\\d+\\.(\\d+)", 1))
+      .withColumn("minorVersion", col("minorVersion").cast("int"))
+      .withColumn("version_number", expr("mySplit(app_version)")) //we can use our own function instead of regex or with regex inside
+      .withColumn("version_number", col("version_number").cast("int"))
     mdf.show(5, false)
     mdf.printSchema()
 
