@@ -1,6 +1,7 @@
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{approx_count_distinct, col, count, countDistinct, expr, first, from_json, get_json_object, json_tuple, last, max, min, regexp_extract, regexp_replace, to_json}
+import org.apache.spark.sql.functions.{approx_count_distinct, avg, col, count, countDistinct, expr, first, from_json, get_json_object, json_tuple, kurtosis, last, max, min, regexp_extract, regexp_replace, skewness, stddev, stddev_pop, sum, to_json, var_pop, variance}
 import org.apache.spark.sql.types._
+//import org.apache.spark.sql.functions
 
 object UsingJSON extends App {
   val session = SparkSession.builder().appName("test").master("local").getOrCreate()
@@ -122,5 +123,19 @@ object UsingJSON extends App {
       .withColumn("version_number", col("version_number").cast("int"))
     mdf.show(5, false)
     mdf.printSchema()
+
+    mdf.select(min(col("money"))
+      ,count(col("money"))
+      ,max(col("money"))
+      ,sum(col("money"))
+      ,avg(col("money"))
+      ,variance(col("money"))
+      ,stddev(col("money"))
+      ,var_pop(col("money"))
+      ,stddev_pop(col("money"))
+      ,skewness(col("money"))
+      ,kurtosis(col("money"))
+
+    ).show
 
 }
