@@ -188,12 +188,21 @@ object UsingJSON extends App {
 
   winterDF
     .coalesce(1)
-    .write.option("header","true")
+    .write
+    .option("header","true")
     .format("json")
     .mode("overwrite")
     .save(tmpPath)
 
-  winterDF.write.json("./src/resources/winterJSON") //same as .format("json").save(mypath)
+  winterDF
+    .coalesce(1)
+    .write
+    .option("multiline", true) // apparently did nothing well we have rows of data
+    .mode("overwrite")
+    .json("./src/resources/winterJSON") //same as .format("json").save(mypath)
   //TODO add flag to save multiline JSON, so an array of dictionaries for example
+  //maybe we have to convert to an array of Rows and then save it
+
+
 
 }
