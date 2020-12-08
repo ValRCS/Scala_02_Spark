@@ -26,5 +26,14 @@ object Joins extends App {
   graduateProgram.show()
   sparkStatus.show()
 
+  //create temporary views they are lazily evaluated meaning they will have date when we actually use them
+  person.createOrReplaceTempView("person")
+  graduateProgram.createOrReplaceTempView("graduateProgram")
+  sparkStatus.createOrReplaceTempView("sparkStatus")
+
+  // in Scala
+  val joinExpression = person.col("graduate_program") === graduateProgram.col("id")
+
+  person.join(graduateProgram, joinExpression).show()
 
 }
