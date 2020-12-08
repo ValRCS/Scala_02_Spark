@@ -115,5 +115,23 @@ object Joins extends App {
     .join(sparkStatusDf
       ,expr("array_contains(spark_status, id)")).show()
 
+  //dealing with duplicates
+  val gradProgramDupe = graduateProgram.withColumnRenamed("id", "graduate_program")
+  val joinExpr = gradProgramDupe.col("graduate_program") === person.col(
+    "graduate_program")
+
+  person.join(gradProgramDupe, joinExpr).show()
+  //this will not work we have dupes!
+  //  person.join(gradProgramDupe, joinExpr).select("graduate_program").show()
+
+  //Approach 1: Different join expression
+  //When you have two keys that have the same name, probably the easiest fix is to change the join
+  //expression from a Boolean expression to a string or sequence. This automatically removes one of
+  //the columns for you during the join
+  person.join(gradProgramDupe,"graduate_program").select("graduate_program").show()
+  person.join(gradProgramDupe,"graduate_program").show()
+
+
+
 
 }
