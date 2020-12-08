@@ -1,4 +1,5 @@
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.expr
 
 object Joins extends App {
 
@@ -18,7 +19,7 @@ object Joins extends App {
     (3, "Bachelors", "Dept of Basket Weaving", "UC Berkeley"),
     (1, "Ph.D.", "EECS", "UC Berkeley"))
     .toDF("id", "degree", "department", "school")
-  val sparkStatus = Seq(
+  val sparkStatusDf = Seq(
     (500, "Vice President"),
     (250, "PMC Member"),
     (100, "Contributor"))
@@ -26,12 +27,12 @@ object Joins extends App {
 
   person.show()
   graduateProgram.show()
-  sparkStatus.show()
+  sparkStatusDf.show()
 
   //create temporary views they are lazily evaluated meaning they will have date when we actually use them
   person.createOrReplaceTempView("person")
   graduateProgram.createOrReplaceTempView("graduateProgram")
-  sparkStatus.createOrReplaceTempView("sparkStatus")
+  sparkStatusDf.createOrReplaceTempView("sparkStatus")
 
   // in Scala
   val joinExpression = person.col("graduate_program") === graduateProgram.col("id")
@@ -106,4 +107,13 @@ object Joins extends App {
     .join(gradProgUpdated
       ,person.col("graduate_program") === gradProgUpdated.col("gradId"))
     .show()
+
+  //Joins on Complex Types
+  //Even though this might seem like a challenge, it’s actually not. Any expression is a valid join
+  //expression, assuming that it returns a Boolean:
+  person.withColumnRenamed("id", "personId")
+    .join(sparkStatusDf
+      ,expr("array_contains(spark_status, id)")).show()
+
+
 }
