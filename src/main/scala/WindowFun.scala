@@ -1,6 +1,6 @@
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{col, dense_rank, desc, max, mean, min, rank, to_date}
+import org.apache.spark.sql.functions.{col, dense_rank, desc, expr, max, mean, min, rank, sum, to_date}
 
 object WindowFun extends App {
   val session = SparkSession.builder().appName("test").master("local").getOrCreate()
@@ -46,7 +46,7 @@ object WindowFun extends App {
     .show(50, false)
 
   // in Scala
-  val dfNoNull = df.drop()
+  val dfNoNull = df.na.drop()
   dfNoNull.createOrReplaceTempView("dfNoNull")
   dfNoNull
     .groupBy("customerId", "stockCode")
@@ -54,6 +54,44 @@ object WindowFun extends App {
     )
     .orderBy(desc("customerId"), desc("stockCode"))
     .show(5,false)
+
+  //so grouping sets is not available through API in any language
+
+  //now onto rollups
+  val rolledUpDF = dfNoNull.rollup("Date", "Country").agg(sum("Quantity"))
+    .selectExpr("Date", "Country", "`sum(Quantity)` as total_quantity")
+    .orderBy("total_quantity", "Date")
+  rolledUpDF.show()
+
+  //so null in rollup means everything
+//  dfNoNull.where(expr("Country = null")).show(10,false)
+  //so this is country totals
+  rolledUpDF.where("Date IS NULL").show(10, truncate = false)
+  rolledUpDF.where("Country IS NULL").show(10, truncate = false)
+  dfNoNull.groupBy("Country").agg(sum("Quantity")).show(10, truncate = false)
+
+  //A cube takes the rollup to a level deeper. Rather than treating elements hierarchically, a cube
+  //does the same thing across all dimensions. This means that it won’t just go by date over the
+  //entire time period, but also the country.
+  dfNoNull.cube("Date", "Country").agg(sum(col("Quantity")))
+    .select("Date", "Country", "sum(Quantity)").orderBy("Date").show(15, false)
+
+  dfNoNull.cube("Date", "Country","InvoiceNo").agg(sum(col("Quantity")))
+    .select("Date", "Country","InvoiceNo", "sum(Quantity)").orderBy(desc("sum(Quantity)"))
+    .show(25, false)
+
+  // in Scala
+  val pivoted = df.groupBy("date").pivot("Country").sum()
+
+  pivoted.show(25,false)
+
+  //big pivot with performing aggregration on each value from the country column
+  df.groupBy("date")
+    .pivot("Country")
+    .agg("Quantity"->"sum", "Quantity"->"max","Quantity"->"mean", "Quantity"->"min")
+    .show(10, false)
+
+
 
 
 }
