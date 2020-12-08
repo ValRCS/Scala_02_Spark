@@ -36,4 +36,16 @@ object Joins extends App {
 
   person.join(graduateProgram, joinExpression).show()
 
+  //so matches in either side of joinExpression will be added with nulls in places of missing data
+  //in a basic outer join
+  val outerDf = person.join(graduateProgram, joinExpression, "outer")
+  println(outerDf.columns.mkString("Array(", ", ", ")"))
+
+  //TODO join with withColumnRenamed
+  //TODO also do joinType = "left_outer"
+  //TODO also do joinType = "right_outer"
+
+
+
+
 }
