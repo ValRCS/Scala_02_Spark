@@ -89,4 +89,21 @@ object Joins extends App {
   //this will do crossjoin since we need no join expression for cross join
   graduateProgram.crossJoin(person).show() //so 4 programs x 4 persons 16 rows
 
+//regular inner join
+  person
+    .withColumnRenamed("id","personId")
+    .join(graduateProgram, joinExpression)
+    .show()
+
+  //so if we rename columns used in join we
+  //then we have to do renaming and join expression ahead of time
+  val gradProgUpdated = graduateProgram
+    .withColumnRenamed("department","dept.")
+    .withColumnRenamed("id","gradId")
+
+  person
+    .withColumnRenamed("id","personId")
+    .join(gradProgUpdated
+      ,person.col("graduate_program") === gradProgUpdated.col("gradId"))
+    .show()
 }
