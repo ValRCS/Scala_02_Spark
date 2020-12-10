@@ -49,8 +49,16 @@ object DataSources extends App {
     df = df,
     format = "csv",
     sc = session.sparkContext,
-    tmpFolder = "./src/resources/tmp", //this looks the place where the files are stored before deleting
+    tmpFolder = "./src/resources/tmp1", //this looks the place where the files are stored before deleting
     filename = "./src/resources/singleCSV.csv"
+  )
+
+  DariaWriters.writeSingleFile(
+    df = df,
+    format = "parquet",
+    sc = session.sparkContext,
+    tmpFolder = "./src/resources/tmp2", //this looks the place where the files are stored before deleting
+    filename = "./src/resources/single.parquet"
   )
 
 }

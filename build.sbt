@@ -11,4 +11,6 @@ libraryDependencies += "org.apache.spark" %% "spark-sql" % "3.0.1"
 
 libraryDependencies += "com.github.mrpowers" %% "spark-daria" % "0.38.2"
 
+libraryDependencies += "org.xerial" % "sqlite-jdbc" % "3.32.3.2"
+
 //TODO add MLib and Graph lib
