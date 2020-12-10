@@ -32,6 +32,8 @@ object SQLConn extends App {
   //TODO why Name desc did not consider desc
   artists.sort(expr("Name desc")).show(15, false)
 
+  val albums = session.read.format("jdbc").option("url", url)
+    .option("dbtable", "albums").option("driver", driver).load()
 
   val tracks = session.read.format("jdbc").option("url", url)
     .option("dbtable", "tracks").option("driver", driver).load()
@@ -92,5 +94,15 @@ object SQLConn extends App {
     .sort("TrackMinutes")
     .show(15, false)
 
+  // in Scala
+  // in Scala
+  val props = new java.util.Properties
+  props.setProperty("driver", "org.sqlite.JDBC")
 
+  val savePath = "C:/sqlite/db/my-chinook.db"
+  val saveUrl = s"jdbc:sqlite:/${savePath}"
+  tracksAlbumsArtists.write.mode("append").jdbc(saveUrl, "someTable", props)
+  artists.write.mode("overwrite").jdbc(saveUrl, "artists", props)
+  albums.write.mode("overwrite").jdbc(saveUrl, "albums", props)
+  tracks.write.mode("overwrite").jdbc(saveUrl, "tracks", props)
 }
