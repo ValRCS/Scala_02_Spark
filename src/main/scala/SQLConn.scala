@@ -105,4 +105,8 @@ object SQLConn extends App {
   artists.write.mode("overwrite").jdbc(saveUrl, "artists", props)
   albums.write.mode("overwrite").jdbc(saveUrl, "albums", props)
   tracks.write.mode("overwrite").jdbc(saveUrl, "tracks", props)
+
+  artists.select("Name").write.text("./src/resources/artists.txt")
+
+
 }
