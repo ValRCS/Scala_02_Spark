@@ -1,5 +1,5 @@
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{col, desc, expr}
+import org.apache.spark.sql.functions.{col, desc, expr, round}
 
 object SQLConn extends App {
   println("Testing SQL connection")
@@ -57,5 +57,40 @@ object SQLConn extends App {
 
   //TODO create tracksDF with album joined with artist as well
   //TODO filter only the long songs over 10 minutes long
-  //TODO you can do this with pure SQL or can do itwith mixture of regular SQL and Spark SQL
+  //TODO you can do this with pure SQL or can do it with mixture of regular SQL and Spark SQL
+  val joinTracksAndAlbumsWithArtists = """(SELECT a.Title AS AlbumName,
+                                        a2.Name AS ArtistName,
+                                        t.Name AS TrackName,
+                                        ROUND((t.Milliseconds / 60000.0), 2) AS TrackMinutes FROM albums a
+                                        JOIN artists a2
+                                        ON a.ArtistId = a2.ArtistId
+                                        JOIN tracks t
+                                        ON t.AlbumId = a.AlbumId
+                                        WHERE TrackMinutes > 10
+                                        ORDER BY TrackMinutes)"""
+  val tracksAlbumsArtists = session.read.format("jdbc")
+    .option("url", url).option("dbtable", joinTracksAndAlbumsWithArtists).option("driver", driver)
+    .load()
+  tracksAlbumsArtists
+    .withColumn("TrackMinutes", round(col("TrackMinutes"),2))
+    .show(15, false)
+
+  val joinTracksAndAlbumsWithArtistsFiltering = """(SELECT a.Title AS AlbumName,
+                                        a2.Name AS ArtistName,
+                                        t.Name AS TrackName,
+                                        ROUND((t.Milliseconds / 60000.0), 2) AS TrackMinutes FROM albums a
+                                        JOIN artists a2
+                                        ON a.ArtistId = a2.ArtistId
+                                        JOIN tracks t
+                                        ON t.AlbumId = a.AlbumId)"""
+  val tracksAlbumsArtistsFiltering = session.read.format("jdbc")
+    .option("url", url).option("dbtable", joinTracksAndAlbumsWithArtistsFiltering).option("driver", driver)
+    .load()
+  tracksAlbumsArtistsFiltering
+    .withColumn("TrackMinutes", round(col("TrackMinutes"),2))
+    .filter(col("TrackMinutes") > 10)
+    .sort("TrackMinutes")
+    .show(15, false)
+
+
 }
