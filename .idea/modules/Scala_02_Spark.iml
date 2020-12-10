@@ -22,6 +22,7 @@
     <orderEntry type="library" name="sbt: com.fasterxml.jackson.module:jackson-module-paranamer:2.10.0:jar" level="project" />
     <orderEntry type="library" name="sbt: com.fasterxml.jackson.module:jackson-module-scala_2.12:2.10.0:jar" level="project" />
     <orderEntry type="library" name="sbt: com.github.luben:zstd-jni:1.4.4-3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.github.mrpowers:spark-daria_2.12:0.38.2:jar" level="project" />
     <orderEntry type="library" name="sbt: com.github.spotbugs:spotbugs-annotations:3.1.9:jar" level="project" />
     <orderEntry type="library" name="sbt: com.google.code.findbugs:jsr305:3.0.2:jar" level="project" />
     <orderEntry type="library" name="sbt: com.google.code.gson:gson:2.2.4:jar" level="project" />
@@ -170,6 +171,7 @@
     <orderEntry type="library" name="sbt: org.threeten:threeten-extra:1.5.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.tukaani:xz:1.5:jar" level="project" />
     <orderEntry type="library" name="sbt: org.xerial.snappy:snappy-java:1.1.7.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.xerial:sqlite-jdbc:3.32.3.2:jar" level="project" />
     <orderEntry type="library" name="sbt: oro:oro:2.0.8:jar" level="project" />
     <orderEntry type="module-library">
       <library name="sbt: unmanaged-sources-and-docs">
