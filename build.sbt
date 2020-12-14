@@ -18,4 +18,4 @@ libraryDependencies += "com.github.mrpowers" %% "spark-daria" % "0.38.2"
 
 libraryDependencies += "org.xerial" % "sqlite-jdbc" % "3.32.3.2"
 
-//TODO add MLib and Graph lib
+//TODO and Graph lib

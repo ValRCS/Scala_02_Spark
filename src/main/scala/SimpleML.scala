@@ -16,7 +16,7 @@ object SimpleML extends App {
   val fittedRF = supervised.fit(df)
 
   val preparedDF = fittedRF.transform(df)
-  preparedDF.show()
+  preparedDF.show(truncate = false)
 
   //in supervised learning we want to train on one data set and test on completely separate data set
   val Array(train, test) = preparedDF.randomSplit(Array(0.7, 0.3)) //so 70% for training and 30% for testing
@@ -40,4 +40,68 @@ object SimpleML extends App {
 //    .load(newPath)
 //  newDF.printSchema()
 //  newDF.show(truncate = false)
+
+
+
+  //actually  model is fitted here, so to say rubber meets the road here
+  // in Scala
+//  val fittedLR = lr.fit(train)
+//
+//  //now we should be able to do predictions and test our accuracy
+//  //so here transform would be predicting
+//  fittedLR.transform(train).select("label", "prediction").show()
+//
+//  //how about using it on test set?
+//  fittedLR.transform(test).select("label", "prediction").show()
+
+
+  //creating a Pipeline which can combine the above in a more standard way
+  // in Scala
+  import org.apache.spark.ml.classification.LogisticRegression
+  val lr = new LogisticRegression().setLabelCol("label").setFeaturesCol("features")
+  val rForm = new RFormula()
+  import org.apache.spark.ml.Pipeline
+  val stages = Array(rForm, lr)
+  val pipeline = new Pipeline().setStages(stages)
+
+  println("Going to add Parameters")
+
+  import org.apache.spark.ml.tuning.ParamGridBuilder
+  val params = new ParamGridBuilder() //FIXME rForm formula
+    .addGrid(rForm.formula, Array(
+      "lab ~ . + color:value1",
+      "lab ~ . + color:value1 + color:value2"))
+    .addGrid(lr.elasticNetParam, Array(0.0, 0.5, 1.0))
+    .addGrid(lr.regParam, Array(0.1, 2.0))
+    .build()
+
+  // in Scala
+  import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
+  val evaluator = new BinaryClassificationEvaluator()
+    .setMetricName("areaUnderROC")
+    .setRawPredictionCol("prediction")
+    .setLabelCol("label")
+
+  import org.apache.spark.ml.tuning.TrainValidationSplit
+  val tvs = new TrainValidationSplit()
+    .setTrainRatio(0.75) // also the default.
+    .setEstimatorParamMaps(params)
+    .setEstimator(pipeline)
+    .setEvaluator(evaluator)
+
+
+  //so the whole work of testing 12 different hyperparameter combinations
+  //and evaluating the accuracy is done in a single short line
+
+  println("Ready to Fit!")
+//  val tvsFitted = tvs.fit(train) //FIXME column features already exist
+  val tvsFitted = tvs.fit(df)
+
+  //for kick we can see how well it works on the training set
+  //it can be as high as 100% here but that doesnt mean anything
+//  println("Training acc:", evaluator.evaluate(tvsFitted.transform(train)))
+
+  //Crucially we can see how well it works on our test set
+  println("TRAIN ACC:", evaluator.evaluate(tvsFitted.transform(df)))// 0.9166666666666667
+  //FIXME we need to test on TRAIN SET not the whole DF!
 }
