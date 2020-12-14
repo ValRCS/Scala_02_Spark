@@ -17,4 +17,27 @@ object SimpleML extends App {
 
   val preparedDF = fittedRF.transform(df)
   preparedDF.show()
+
+  //in supervised learning we want to train on one data set and test on completely separate data set
+  val Array(train, test) = preparedDF.randomSplit(Array(0.7, 0.3)) //so 70% for training and 30% for testing
+
+  train.describe().show()
+
+  test.describe().show()
+
+  //how to save on Parquet
+//  preparedDF
+//    .write
+//    .format("parquet")
+//    .mode("overwrite")
+//    .save("./src/resources/simple-ml.parquet")
+//
+//  val newPath = "./src/resources/simple-ml.parquet"
+//  val newDF = session.read
+//    .format("parquet")
+////    .option("inferSchema", "true") // for parquet all the data types are encoded
+////    .option("header", true)
+//    .load(newPath)
+//  newDF.printSchema()
+//  newDF.show(truncate = false)
 }
