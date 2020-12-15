@@ -10,6 +10,7 @@ object FormattingData extends App {
     .load("./src/resources/retail-data/by-day/*.csv") //we took multiple csv files and loaded them together into a single DF
     .coalesce(5)
     .where("Description IS NOT NULL")
+//  val fakeIntDF = spark.read.parquet("./src/resources/simple-ml-integers")
   val fakeIntDF = spark.read.parquet("./src/resources/simple-ml-integers")
   var simpleDF = spark.read.json("./src/resources/simple-ml")
   val scaleDF = spark.read.parquet("./src/resources/simple-ml-scaling")
@@ -36,5 +37,22 @@ object FormattingData extends App {
     .setInputCol("features")
     .setOutputCol("scaled_features")
   ss.fit(scaleDF).transform(scaleDF).show(false)
+
+
+
+  import org.apache.spark.ml.feature.RFormula
+  val supervised = new RFormula()
+    .setFormula("lab ~ . + color:value1 + color:value2")
+  supervised.fit(simpleDF).transform(simpleDF).show(truncate = false)
+
+  val intFormula = new RFormula()
+    .setFormula("int1 ~ . + int2 + int3")
+  val intFeatureLab = intFormula.fit(fakeIntDF).transform(fakeIntDF)
+
+  //FIXME need Array type instead of int
+    val iScaler = new StandardScaler()
+      .setInputCol("features")
+      .setOutputCol("features_scaled")
+  iScaler.fit(intFeatureLab).transform(intFeatureLab).show(truncate = false)
 
 }
