@@ -104,4 +104,11 @@ object SimpleML extends App {
   //Crucially we can see how well it works on our test set
   println("TRAIN ACC:", evaluator.evaluate(tvsFitted.transform(df)))// 0.9166666666666667
   //FIXME we need to test on TRAIN SET not the whole DF!
+
+  import org.apache.spark.ml.PipelineModel
+  import org.apache.spark.ml.classification.LogisticRegressionModel
+  val trainedPipeline = tvsFitted.bestModel.asInstanceOf[PipelineModel]
+  val TrainedLR = trainedPipeline.stages(1).asInstanceOf[LogisticRegressionModel]
+  val summaryLR = TrainedLR.summary
+  summaryLR.objectiveHistory.foreach(println) // 0.6751425885789243, 0.5543659647777687, 0.473776..
 }
