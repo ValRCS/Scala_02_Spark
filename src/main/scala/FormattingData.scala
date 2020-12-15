@@ -11,7 +11,10 @@ object FormattingData extends App {
     .coalesce(5)
     .where("Description IS NOT NULL")
 //  val fakeIntDF = spark.read.parquet("./src/resources/simple-ml-integers")
-  val fakeIntDF = spark.read.parquet("./src/resources/simple-ml-integers")
+  val fakeIntDF = spark.read.format("csv")
+    .option("header", "true")
+    .option("inferSchema", "true")
+    .load("./src/resources/my-ints.csv") //we took multiple csv files and loaded them together into a single DF
   var simpleDF = spark.read.json("./src/resources/simple-ml")
   val scaleDF = spark.read.parquet("./src/resources/simple-ml-scaling")
   fakeIntDF.printSchema()
@@ -46,10 +49,9 @@ object FormattingData extends App {
   supervised.fit(simpleDF).transform(simpleDF).show(truncate = false)
 
   val intFormula = new RFormula()
-    .setFormula("int1 ~ . + int2 + int3")
+    .setFormula("int1 ~ . + int2 + int3 + int2:int3") //so : means multiply
   val intFeatureLab = intFormula.fit(fakeIntDF).transform(fakeIntDF)
 
-  //FIXME need Array type instead of int
     val iScaler = new StandardScaler()
       .setInputCol("features")
       .setOutputCol("features_scaled")
