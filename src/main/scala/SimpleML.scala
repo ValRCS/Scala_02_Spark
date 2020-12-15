@@ -111,4 +111,12 @@ object SimpleML extends App {
   val TrainedLR = trainedPipeline.stages(1).asInstanceOf[LogisticRegressionModel]
   val summaryLR = TrainedLR.summary
   summaryLR.objectiveHistory.foreach(println) // 0.6751425885789243, 0.5543659647777687, 0.473776..
+
+  tvsFitted.write.overwrite().save("./src/resources/models")
+
+  import org.apache.spark.ml.tuning.TrainValidationSplitModel
+  val model = TrainValidationSplitModel.load("./src/resources/models")
+  val newDF = model.transform(df)
+  newDF.printSchema()
+  newDF.show(10, truncate = false)
 }

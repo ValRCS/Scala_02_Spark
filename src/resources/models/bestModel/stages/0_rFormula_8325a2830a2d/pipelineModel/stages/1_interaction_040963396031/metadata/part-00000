@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.Interaction","timestamp":1608054104202,"sparkVersion":"3.0.1","uid":"interaction_040963396031","paramMap":{"inputCols":["stridx_2c9e61e6df0d","value1"],"outputCol":"interaction_cb974fd0a744"},"defaultParamMap":{"outputCol":"interaction_040963396031__output"}}
