@@ -57,4 +57,28 @@ object FormattingData extends App {
       .setOutputCol("features_scaled")
   iScaler.fit(intFeatureLab).transform(intFeatureLab).show(truncate = false)
 
+  // in Scala
+  //Any SELECT statement you can use in SQL is a valid
+  //transformation. The only thing you need to change is that instead of using the table name, you
+  //should just use the keyword THIS.
+  import org.apache.spark.ml.feature.SQLTransformer
+  val basicTransformation = new SQLTransformer()
+    .setStatement("""
+    SELECT sum(Quantity), count(*), CustomerID
+    FROM __THIS__
+    GROUP BY CustomerID
+    """)
+  basicTransformation.transform(sales).show(5, truncate=false)
+
+  //so you can data munge/transform as much as you want in SQL
+  //https://spark.apache.org/docs/latest/api/sql/index.html
+  val intTransformation = new SQLTransformer()
+    .setStatement("""
+    SELECT *, int1*int2 as int1_int2, array(int1), array(int2,int3+10)
+    FROM __THIS__
+    """)
+  //so __THIS__ refers to whichever DataFrame you are transforming
+  //below it would be fakeIntDF
+  intTransformation.transform(fakeIntDF).show(truncate=false)
+
 }
