@@ -1,3 +1,4 @@
+import org.apache.spark.ml.feature.{Bucketizer, VectorAssembler}
 import org.apache.spark.sql.SparkSession
 
 object FormattingData extends App {
@@ -85,5 +86,28 @@ object FormattingData extends App {
   transformedDF.printSchema()
   transformedDF.show(truncate = false)
 
+  val va = new VectorAssembler()
+    .setInputCols(Array("int1", "int2", "int3"))
+    .setOutputCol("features") //in case we do not want some random column name
+  val intWithFeatures = va.transform(fakeIntDF)
+  intWithFeatures.show()
+
+  val contDF = spark.range(20).selectExpr("cast(id as double)")
+  contDF.show()
+
+  //When specifying your
+  //bucket points, the values you pass into splits must satisfy three requirements:
+  //The minimum value in your splits array must be less than the minimum value in your
+  //DataFrame.
+  //The maximum value in your splits array must be greater than the maximum value in
+  //your DataFrame.
+  //You need to specify at a minimum three values in the splits array, which creates two
+  //buckets.
+  //WARNING
+  //The Bucketizer can be confusing because we specify bucket borders via the splits method, but these
+
+  val bucketBorders = Array(-1.0, 5.0, 10.0, 250.0, 600.0)
+  val bucketer = new Bucketizer().setSplits(bucketBorders).setInputCol("id")
+  bucketer.transform(contDF).show()
 
 }
