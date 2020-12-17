@@ -79,6 +79,11 @@ object FormattingData extends App {
     """)
   //so __THIS__ refers to whichever DataFrame you are transforming
   //below it would be fakeIntDF
-  intTransformation.transform(fakeIntDF).show(truncate=false)
+//  intTransformation.transform(fakeIntDF).show(truncate=false)
+
+  val transformedDF = intTransformation.transform(fakeIntDF)
+  transformedDF.printSchema()
+  transformedDF.show(truncate = false)
+
 
 }
