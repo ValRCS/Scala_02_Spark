@@ -1,5 +1,6 @@
 import org.apache.spark.ml.feature.{Bucketizer, MinMaxScaler, QuantileDiscretizer, VectorAssembler}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.{col, udf}
 
 object FormattingData extends App {
   val spark = SparkSession.builder().appName("test").master("local").getOrCreate()
@@ -75,7 +76,7 @@ object FormattingData extends App {
   //https://spark.apache.org/docs/latest/api/sql/index.html
   val intTransformation = new SQLTransformer()
     .setStatement("""
-    SELECT *, int1*int2 as int1_int2, array(int1), array(int2,int3+10)
+    SELECT *, int1*int2 as int1_int2, array(int1) , array(int2,int3+10) as features
     FROM __THIS__
     """)
   //so __THIS__ refers to whichever DataFrame you are transforming
@@ -146,7 +147,8 @@ val sScaler = new StandardScaler()
   val fittedMinMax = minMax.fit(scaleDF)
   fittedMinMax.transform(scaleDF).show(truncate=false)
 
-  //TODO exercise scale contDF into 0 to 1 range
+  println("ScaleDF Schema")
+  scaleDF.printSchema()
 
 
 //  The max absolute scaler (MaxAbsScaler) scales the data by dividing each value by the maximum
@@ -169,5 +171,30 @@ val sScaler = new StandardScaler()
     .setInputCol("features")
   scalingUp.transform(scaleDF).show()
 
+  //so we need to convert array of some ints into a Vector of Doubles
+  //so we will create a user defined function
+  val convertUDF = udf((array : Seq[Int]) => {
+    Vectors.dense(array.toArray.map(_.toDouble))
+  })
 
+  val afWithVector = transformedDF.select("*").withColumn("features", convertUDF(col("features")))
+  afWithVector.printSchema()
+  afWithVector.show(truncate=false)
+
+  val zeroScaler = new MinMaxScaler()
+    .setMin(0)
+    .setMax(1)
+    .setInputCol("features")
+    .setOutputCol("scaled_features")
+
+  //lets try different scalers on our df with Vector
+  zeroScaler.fit(afWithVector).transform(afWithVector).show(truncate=false)
+  minMax.fit(afWithVector).transform(afWithVector).show(truncate=false)
+
+  sScaler
+    .fit(afWithVector)
+    .transform(afWithVector)
+    .show(truncate = false)
+
+  //TODO check scaler options
 }
