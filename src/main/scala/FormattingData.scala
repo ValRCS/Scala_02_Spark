@@ -1,4 +1,4 @@
-import org.apache.spark.ml.feature.{Bucketizer, VectorAssembler}
+import org.apache.spark.ml.feature.{Bucketizer, MinMaxScaler, QuantileDiscretizer, VectorAssembler}
 import org.apache.spark.sql.SparkSession
 
 object FormattingData extends App {
@@ -109,5 +109,65 @@ object FormattingData extends App {
   val bucketBorders = Array(-1.0, 5.0, 10.0, 250.0, 600.0)
   val bucketer = new Bucketizer().setSplits(bucketBorders).setInputCol("id")
   bucketer.transform(contDF).show()
+
+  val quantBucketer = new QuantileDiscretizer()
+    .setNumBuckets(5)
+    .setInputCol("id")
+  val fittedBucketer = quantBucketer.fit(contDF)
+  fittedBucketer.transform(contDF).show()
+
+  //The StandardScaler standardizes a set of features to have zero mean and a standard deviation
+  //of 1. The flag withStd will scale the data to unit standard deviation while the flag withMean
+  //(false by default) will center the data prior to scaling it.
+val sScaler = new StandardScaler()
+    .setInputCol("features")
+    .setWithMean(true)
+    .setWithStd(true)
+    .setOutputCol("mean_scaled")
+
+
+  scaleDF.show()
+  sScaler
+    .fit(scaleDF)
+    .transform(scaleDF)
+    .show(truncate = false) //fit was necessary because we had to calculate mean first
+
+  //TODO exercise scale our transformedDF with StandardScaler
+
+
+  //The MinMaxScaler will scale the values in a vector (component wise) to the proportional values
+  //on a scale from a given min value to a max value. If you specify the minimum value to be 0 and
+  //the maximum value to be 1, then all the values will fall in between 0 and 1:
+  val minMax = new MinMaxScaler()
+    .setMin(5)
+    .setMax(10)
+    .setInputCol("features")
+    .setOutputCol("scaled_features")
+  val fittedMinMax = minMax.fit(scaleDF)
+  fittedMinMax.transform(scaleDF).show(truncate=false)
+
+  //TODO exercise scale contDF into 0 to 1 range
+
+
+//  The max absolute scaler (MaxAbsScaler) scales the data by dividing each value by the maximum
+//  absolute value in this feature. All values therefore end up between −1 and 1. This transformer
+//    does not shift or center the data at all in the process:
+  import org.apache.spark.ml.feature.MaxAbsScaler
+  val maScaler = new MaxAbsScaler().setInputCol("features")
+  val fittedAbsScaler = maScaler.fit(scaleDF)
+  fittedAbsScaler.transform(scaleDF).show()
+
+//  The ElementwiseProduct allows us to scale each value in a vector by an arbitrary value. For
+//  example, given the vector below and the row “1, 0.1, -1” the output will be “10, 1.5, -20.”
+//  Naturally the dimensions of the scaling vector must match the dimensions of the vector inside
+//  the relevant column:
+  import org.apache.spark.ml.feature.ElementwiseProduct
+  import org.apache.spark.ml.linalg.Vectors
+  val scaleUpVec = Vectors.dense(10.0, 15.0, 20.0)
+  val scalingUp = new ElementwiseProduct()
+    .setScalingVec(scaleUpVec)
+    .setInputCol("features")
+  scalingUp.transform(scaleDF).show()
+
 
 }
