@@ -35,7 +35,6 @@ object ClassificationUse extends App {
   println(lrModel.predict(Vectors.dense(1,13,5)))
   println(lrModel.predict(Vectors.dense(2,-3,-5)))
 
-  //TODO make multiple predictions on a DataFrame column
 
   //Decision Trees
   //Decision trees are one of the more friendly and interpretable models for performing classification
@@ -71,8 +70,14 @@ object ClassificationUse extends App {
   val features = bInput.select("features")
   features.printSchema()
   features.show(10, false)
-  //TODO how to make multiple predictions for example for all features in features dataframe
-//  val predictions = dtModel.pr
+
+  //So to make predictions we can simply pass in a dataframe to the models transform method
+  val predictions = dtModel.transform(features)
+
+  //so decision trees are yes or now answers so no room for probability
+  predictions.show(10,false)
+
+  lrModel.transform(features).show(10,false)
 
 
 }
