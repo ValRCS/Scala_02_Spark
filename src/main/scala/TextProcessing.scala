@@ -78,9 +78,13 @@ object TextProcessing extends App {
   val unigram = new NGram().setInputCol("DescOut").setN(1)
   val bigram = new NGram().setInputCol("DescOut").setN(2)
   val trigram = new NGram().setInputCol("DescOut").setN(3)
+  val fourgram = new NGram().setInputCol("DescOut").setN(4)
+
   unigram.transform(tokenized.select("DescOut")).show(false)
   bigram.transform(tokenized.select("DescOut")).show(false)
   trigram.transform(tokenized2.select(col = "DescOut")).show(false)
+  fourgram.transform(tokenized2.select(col = "DescOut")).show(false)
+
 
   //so we can use it on a larger dataframe it will use "DescOut" because we said so in setInputCol !
   bigram.transform(tokenized2).show(false)
