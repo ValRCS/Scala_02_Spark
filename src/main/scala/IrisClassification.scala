@@ -102,7 +102,7 @@ object IrisClassification extends App {
     .setStages(Array(rfClassifier))
 
   val rfParams = new ParamGridBuilder()
-    .addGrid(rfClassifier.numTrees, Array(2, 5, 10, 20))
+    .addGrid(rfClassifier.numTrees, Array(2, 5, 10, 20, 50, 100))
     .addGrid(rfClassifier.impurity, Array("entropy", "gini")) //so how many columns to use for making decision
     .addGrid(rfClassifier.bootstrap, Array(true, false))
     .build()
@@ -116,4 +116,43 @@ object IrisClassification extends App {
 
   val rfModel = rcv.fit(inputData)
   rfModel.avgMetrics.foreach(println)
+
+//  Naive Bayes classifiers are a collection of classifiers based on Bayes’ theorem. The core
+//    assumption behind the models is that all features in your data are independent of one another.
+//  Naturally, strict independence is a bit naive, but even if this is violated, useful models can still be
+//  produced. Naive Bayes classifiers are commonly used in text or document classification,
+//  although it can be used as a more general-purpose classifier as well. There are two different
+//    model types: either a multivariate Bernoulli model, where indicator variables represent the
+//  existence of a term in a document; or the multinomial model, where the total counts of terms are
+//  used.
+//    One important note when it comes to Naive Bayes is that all input features must be non-negative.
+  import org.apache.spark.ml.classification.NaiveBayes
+  val nb = new NaiveBayes()
+  println(nb.explainParams())
+  // in Scala
+  import org.apache.spark.ml.feature.MinMaxScaler
+  val minMax = new MinMaxScaler()
+    .setMin(0)
+    .setMax(1)
+    .setInputCol("features")
+    .setOutputCol("featuresOut")
+  val dataMin0Max1 = minMax
+    .fit(inputData)
+    .transform(inputData)
+    .withColumnRenamed("features", "featuresOld")
+    .withColumnRenamed("featuresOut", "features")
+
+  dataMin0Max1.printSchema()
+  dataMin0Max1.show(15,false)
+
+  val Array(train0, test0) = dataMin0Max1.randomSplit(Array(0.7, 0.3),seed = 2020)
+
+  val trainedModel = nb.fit(train0.where("label != 0"))
+  val bayesPredictions = trainedModel.transform(test0)
+
+  bayesPredictions.show(false)
+
+
+  println(s"Train Accuracy (should be 100%): ${evaluator.evaluate(bayesPredictions)}")
+
 }
