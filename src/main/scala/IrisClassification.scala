@@ -28,6 +28,18 @@ object IrisClassification extends App {
   lrPredictions.show(false)
 
   // obtain evaluator. //so evaluator will check label and prediction and see percentage of accurate answers
+  // An
+  //evaluator doesn’t help too much when it stands alone; however, when we use it in a pipeline, we
+  //can automate a grid search of our various parameters of the models and transformers—trying all
+  //combinations of the parameters to see which ones perform the best. Evaluators are most useful in
+  //this pipeline and parameter grid context. For classification, there are two evaluators, and they
+  //expect two columns: a predicted label from the model and a true label. For binary classification
+  //we use the BinaryClassificationEvaluator. This supports optimizing for two different
+  //metrics “areaUnderROC” and areaUnderPR.” For multiclass classification, we need to use the
+  //MulticlassClassificationEvaluator, which supports optimizing for “f1”,
+  //“weightedPrecision”, “weightedRecall”, and “accuracy”.
+  //To use evaluators, we build up our pipeline, specify the parameters we would like to test, and
+  //then run it and see the results.
   val evaluator = new MulticlassClassificationEvaluator()
     .setMetricName("accuracy")
 
@@ -74,8 +86,34 @@ object IrisClassification extends App {
     .setParallelism(2)  // Evaluate up to 2 parameter settings in parallel
 
   // Run cross-validation, and choose the best set of parameters.
-  val cvModel = cv.fit(train) //so this is where the magic happens , actual work is done
+  val cvModel = cv.fit(inputData) //the slist and evaluation of test will be done for use
 
   cvModel.avgMetrics.foreach(println)
-  println(cvModel.bestModel.params) //TODO pretty print best hyperparemeters
+  val bestModel = cvModel.bestModel //TODO pretty print best hyperparemeters
+  val predictions = bestModel.transform(test)
+  predictions.show(10, false)
+
+  // in Scala
+  import org.apache.spark.ml.classification.RandomForestClassifier
+  val rfClassifier = new RandomForestClassifier()
+  println(rfClassifier.explainParams())
+
+  val rfPipeline = new Pipeline()
+    .setStages(Array(rfClassifier))
+
+  val rfParams = new ParamGridBuilder()
+    .addGrid(rfClassifier.numTrees, Array(2, 5, 10, 20))
+    .addGrid(rfClassifier.impurity, Array("entropy", "gini")) //so how many columns to use for making decision
+    .addGrid(rfClassifier.bootstrap, Array(true, false))
+    .build()
+
+  val rcv = new CrossValidator() //cross Validation will split data into training and test data multiple times across all data
+    .setEstimator(rfPipeline)
+    .setEvaluator(evaluator)
+    .setEstimatorParamMaps(rfParams)
+    .setNumFolds(2)  // Use 3+ in practice
+    .setParallelism(8)  // Evaluate up to 2 parameter settings in parallel
+
+  val rfModel = rcv.fit(inputData)
+  rfModel.avgMetrics.foreach(println)
 }
