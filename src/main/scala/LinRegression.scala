@@ -24,5 +24,7 @@ object LinRegression extends App {
   println(summary.rootMeanSquaredError)
   println(summary.r2)
 
+  val grades =
+
 
 }
