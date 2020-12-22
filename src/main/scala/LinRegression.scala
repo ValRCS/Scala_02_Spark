@@ -1,4 +1,6 @@
+import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.{col, udf}
 
 object LinRegression extends App {
   val spark = SparkSession.builder().appName("test").master("local").getOrCreate()
@@ -24,7 +26,28 @@ object LinRegression extends App {
   println(summary.rootMeanSquaredError)
   println(summary.r2)
 
-  val grades =
+  val grades = spark.read.format("csv")
+    .option("header", "true")
+    .option("inferSchema", "true")
+    .load("./src/resources/simple_lin_regr.csv") //we took multiple csv files and loaded them together into a single DF
+
+  grades.printSchema()
+  grades.show(false)
+
+  val convertUDF = udf((element: Int) => {
+    Vectors.dense(element)
+  })
 
 
+  val gdf = grades
+    .withColumnRenamed("SAT", "features")
+    .withColumnRenamed("GPA", "label")
+    .select("*").withColumn("features", convertUDF(col("features")))
+
+  gdf.printSchema()
+  gdf.show(false)
+
+//  val gradeModel = lr.fit(gdf)
+//  val gradeSummary = gradeModel.summary
+//  gradeSummary.residuals.show()
 }
