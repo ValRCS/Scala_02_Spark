@@ -1,4 +1,6 @@
+import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.{col, udf}
 
 object ClusteringData extends App {
 
@@ -119,8 +121,15 @@ object ClusteringData extends App {
   //TODO make a column in top3df with termIndiced decoded from cvFitted.vocabulary
   //one way would be to make a udf and then create a column
 
+  val termsToWords = udf((numbers: Seq[Int]) => {
+    numbers.map(n => cvFitted.vocabulary(n))
+  })
 
+  top3df.printSchema()
+  val decodedTopics = top3df.
+    withColumn("Top Topics", termsToWords(col("termIndices")))
 
-
+  decodedTopics.printSchema()
+  decodedTopics.show(false)
 
 }
