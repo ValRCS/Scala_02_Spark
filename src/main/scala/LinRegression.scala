@@ -1,9 +1,9 @@
 import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
-import org.apache.spark.ml.linalg.{Vectors, DenseVector}
+import org.apache.spark.ml.linalg.{DenseVector, Vectors}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.types.{DoubleType, FloatType, IntegerType, StructField, StructType}
 
 object LinRegression extends App {
   val spark = SparkSession.builder().appName("test").master("local").getOrCreate()
@@ -117,4 +117,34 @@ object LinRegression extends App {
 
   //R squared
   //The coefficient of determination; a measure of fit. so bas
+
+  val numData = Seq(Row(2.0, 24.0), Row(2.5, 26.0), Row(3.0,28.1),Row(3.5,29.8))
+//  what will be the value at 5
+  val numSchema = List(
+    StructField("age", DoubleType, true),
+    StructField("weight", DoubleType, true)
+  )
+  val someDF = spark.createDataFrame(
+    spark.sparkContext.parallelize(numData),
+    StructType(numSchema)
+  )
+  someDF.printSchema()
+  someDF.show(false)
+
+  val convertNumUDF = udf((element: Double) => {
+    Vectors.dense(element)
+  })
+  val numDF = someDF
+    .withColumn("features", convertNumUDF(col("age")))
+    .withColumnRenamed("weight","label")
+  numDF.printSchema()
+  numDF.show()
+
+  val weightModel = lr.fit(numDF) //all the work is done here once you have your features and label ready
+
+  println(weightModel.intercept)
+  println(weightModel.coefficients)
+  println(weightModel.summary.residuals)
+
+  weightModel.transform(inDF).show(false)
 }
