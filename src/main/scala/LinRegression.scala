@@ -1,3 +1,4 @@
+
 import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
 import org.apache.spark.ml.linalg.{DenseVector, Vectors}
 import org.apache.spark.sql.SparkSession
@@ -147,4 +148,8 @@ object LinRegression extends App {
   println(weightModel.summary.residuals)
 
   weightModel.transform(inDF).show(false)
+
+  val newRow = com.github.valrcs.spark.MyRow() //so you choose how much you want to import
+  //if there are no naming conflicts it is more convenient to import it at the top have specific import.
+  println(newRow)
 }

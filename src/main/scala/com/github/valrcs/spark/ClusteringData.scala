@@ -1,4 +1,5 @@
-import org.apache.spark.ml.linalg.Vectors
+package com.github.valrcs.spark
+
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.{col, udf}
 
@@ -10,6 +11,7 @@ object ClusteringData extends App {
   println(s"Session started on Spark version ${spark.version}")
 
   import org.apache.spark.ml.feature.VectorAssembler
+
   val va = new VectorAssembler()
     .setInputCols(Array("Quantity", "UnitPrice"))
     .setOutputCol("features")
@@ -44,7 +46,9 @@ object ClusteringData extends App {
 
 
   // in Scala
+
   import org.apache.spark.ml.clustering.KMeans
+
   val km = new KMeans().setK(5) //so wee need to set the number of clusters before fitting
   println(km.explainParams())
   val kmModel = km.fit(sales)
@@ -60,7 +64,7 @@ object ClusteringData extends App {
   // Make predictions
   val predictions = kmModel.transform(sales)
   predictions.printSchema()
-  predictions.show(20,false)
+  predictions.show(20, false)
 
 
   //there are other clustering modesl
@@ -69,17 +73,21 @@ object ClusteringData extends App {
 
 
   //TODO model the same data on BisectingKmeans and make predictions!
+
   import org.apache.spark.ml.clustering.BisectingKMeans
+
   val bkm = new BisectingKMeans().setK(5).setMaxIter(5)
 
   val bkmModel = bkm.fit(sales)
-  bkmModel.transform(sales).show(20,false)
+  bkmModel.transform(sales).show(20, false)
 
   //TODO again model and make prediction on our sales!
+
   import org.apache.spark.ml.clustering.GaussianMixture
+
   val gmm = new GaussianMixture().setK(5)
   val gmmModel = gmm.fit(sales)
-  gmmModel.transform(sales).show(20,false)
+  gmmModel.transform(sales).show(20, false)
 
   //Latent Dirichlet Allocation (LDA) is a hierarchical clustering model typically used to perform
   //topic modelling on text documents. LDA tries to extract high-level topics from a series of
@@ -92,7 +100,8 @@ object ClusteringData extends App {
   //To input our text data into LDA, we’re going to have to convert it into a numeric format. You
   //can use the CountVectorizer to achieve this.
 
-  import org.apache.spark.ml.feature.{Tokenizer, CountVectorizer}
+  import org.apache.spark.ml.feature.{CountVectorizer, Tokenizer}
+
   val tkn = new Tokenizer().setInputCol("Description").setOutputCol("DescOut") //so you do not have to write your own split
   val tokenized = tkn.transform(sales.drop("features"))
   val cv = new CountVectorizer()
@@ -106,10 +115,12 @@ object ClusteringData extends App {
   val prepped = cvFitted.transform(tokenized)
 
   prepped.printSchema()
-  prepped.show(20,false)
+  prepped.show(20, false)
 
   // in Scala
+
   import org.apache.spark.ml.clustering.LDA
+
   val lda = new LDA().setK(10).setMaxIter(5)
   println(lda.explainParams())
   val model = lda.fit(prepped) //all the modelling work is done here
@@ -120,7 +131,7 @@ object ClusteringData extends App {
   println(cvFitted.vocabulary.size)
 
   //we can get topic words by hand
-  print(cvFitted.vocabulary(0),cvFitted.vocabulary(1),cvFitted.vocabulary(12))
+  print(cvFitted.vocabulary(0), cvFitted.vocabulary(1), cvFitted.vocabulary(12))
 
   //TODO make a column in top3df with termIndiced decoded from cvFitted.vocabulary
   //one way would be to make a udf and then create a column
