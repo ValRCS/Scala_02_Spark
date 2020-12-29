@@ -18,4 +18,8 @@ libraryDependencies += "com.github.mrpowers" %% "spark-daria" % "0.38.2"
 
 libraryDependencies += "org.xerial" % "sqlite-jdbc" % "3.32.3.2"
 
-//TODO and Graph lib
+// https://mvnrepository.com/artifact/org.scalatest/scalatest
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.3.0-SNAP3" % Test
+
+
+
