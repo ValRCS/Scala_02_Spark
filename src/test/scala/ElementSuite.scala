@@ -20,5 +20,6 @@ class ElementSuite extends AnyFlatSpec with should.Matchers {
   "Extreme Calc" should "get 10 on 0" in {
     val res = MyUtil.calcValue(0)
     res should be (10)
+    MyUtil.calcValue(30) should be (75)
   }
 }
