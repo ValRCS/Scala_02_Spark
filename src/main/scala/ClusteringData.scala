@@ -52,6 +52,10 @@ object ClusteringData extends App {
   // in Scala
   val summary = kmModel.summary
   println(summary.clusterSizes.mkString("Array(", ", ", ")")) // number of points
+  println(summary.trainingCost) //so using elbow method you would check when the cost would start flatlining
+  //use the elbow as optimal k-means
+  //k-means is pretty fast
+  //https://en.wikipedia.org/wiki/Elbow_method_(clustering)
 
   // Make predictions
   val predictions = kmModel.transform(sales)
