@@ -6,4 +6,7 @@ object MyUtil {
   }
 
 //  def calcCircleArea
+  def calcCircleArea(inVal: Int):Double = {
+    inVal*inVal*math.Pi
+  }
 }

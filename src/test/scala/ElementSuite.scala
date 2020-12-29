@@ -22,4 +22,16 @@ class ElementSuite extends AnyFlatSpec with should.Matchers {
     res should be (10)
     MyUtil.calcValue(30) should be (75)
   }
+
+  "Circle Area" should "follow standard PI formula" in {
+    val res = MyUtil.calcCircleArea(5)
+    res should be (5*5*math.Pi)
+    val res2 = MyUtil.calcCircleArea(10)
+    res2 should be (10*10*math.Pi)
+    val res3 = MyUtil.calcCircleArea(25)
+    res3 should be (25*25*math.Pi)
+    MyUtil.calcCircleArea(0) should be (0) //always good idea to test 0
+    //also good candidates to test would 1 , also -1 (we'd have to decide what -1 gives of course
+  }
+
 }
